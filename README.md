@@ -106,7 +106,7 @@ No local Python environment needed — Lambda runs Python 3.12 in the cloud and 
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/maintainer-burnout-guard.git
+git clone https://github.com/i_arshii/maintainer-burnout-guard.git
 cd maintainer-burnout-guard
 
 # 2. Build the SAM package
