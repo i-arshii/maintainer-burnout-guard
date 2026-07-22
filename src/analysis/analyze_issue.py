@@ -12,7 +12,6 @@ Design notes:
   warning log rather than crashing the whole Lambda run.
 - Called in parallel via ThreadPoolExecutor in the orchestrator.
 """
-
 from __future__ import annotations
 
 import json
@@ -21,6 +20,7 @@ from dataclasses import dataclass, field
 from typing import List, Literal
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
 from github.fetch_issues import GitHubIssue
@@ -97,8 +97,19 @@ def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
         body=body_truncated,
     )
 
-    # Nova Lite uses the Converse API — messages array + optional system prompt
-    bedrock = boto3.client("bedrock-runtime", region_name=config.TARGET_REGION)
+    # Advanced retry fallback config mapping definition block
+    retry_config = Config(
+        retries={
+            "max_attempts": 10,
+            "mode": "standard"
+        }
+    )
+
+    bedrock = boto3.client(
+        "bedrock-runtime", 
+        region_name=config.TARGET_REGION,
+        config=retry_config
+    )
 
     try:
         response = bedrock.converse(
