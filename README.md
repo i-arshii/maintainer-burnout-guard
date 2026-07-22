@@ -68,17 +68,23 @@ Lambda: handler.handler
 ```
 maintainer-burnout-guard/
 ├── lambda/
+│   ├── __init__.py
 │   ├── handler.py              # Entry point + orchestration
 │   ├── config.py               # SSM loader, AppConfig dataclass
 │   ├── github/
+│   │   ├── __init__.py
 │   │   └── fetch_issues.py     # GitHub REST client (stdlib urllib)
 │   ├── analysis/
+│   │   ├── __init__.py
 │   │   └── analyze_issue.py    # Bedrock analysis — structured JSON output
 │   ├── response/
+│   │   ├── __init__.py
 │   │   └── draft_response.py   # Bedrock response drafting
 │   ├── digest/
+│   │   ├── __init__.py
 │   │   └── build_digest.py     # HTML + plain-text digest builder
 │   └── email/
+│       ├── __init__.py
 │       └── send_digest.py      # SES delivery
 ├── infra/
 │   └── template.yaml           # AWS SAM — all infra as code
