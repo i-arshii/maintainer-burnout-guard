@@ -54,7 +54,6 @@ Resources:
       Handler: handler.handler
       MemorySize: !Ref LambdaMemoryMB
       Timeout: !Ref LambdaTimeoutSeconds
-      ReservedConcurrentExecutions: 1    # prevents overlapping nightly runs
       Role: !GetAtt LambdaExecutionRole.Arn
       # EventBridge trigger defined separately so we can control the permission
       # resource name explicitly
