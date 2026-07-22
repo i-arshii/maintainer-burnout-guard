@@ -19,8 +19,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
-from src.github.fetch_issues import GitHubIssue
-from src.analysis.analyze_issue import AnalysisResult
+from github.fetch_issues import GitHubIssue
+from analysis.analyze_issue import AnalysisResult
 
 # Severity badge colours
 _BADGE_STYLES = {

@@ -20,9 +20,9 @@ import logging
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-from src.config import AppConfig
-from src.github.fetch_issues import GitHubIssue
-from src.analysis.analyze_issue import AnalysisResult
+from config import AppConfig
+from github.fetch_issues import GitHubIssue
+from analysis.analyze_issue import AnalysisResult
 
 logger = logging.getLogger(__name__)
 

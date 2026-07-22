@@ -23,8 +23,8 @@ from typing import List, Literal
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-from src.github.fetch_issues import GitHubIssue
-from src.config import AppConfig
+from github.fetch_issues import GitHubIssue
+from config import AppConfig
 
 logger = logging.getLogger(__name__)
 

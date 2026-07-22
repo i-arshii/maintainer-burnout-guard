@@ -14,7 +14,7 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
 
-from src.config import AppConfig
+from config import AppConfig
 
 logger = logging.getLogger(__name__)
 

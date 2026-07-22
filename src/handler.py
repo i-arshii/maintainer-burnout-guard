@@ -26,12 +26,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
-from src.config import AppConfig, load_config
-from src.github.fetch_issues import GitHubError, GitHubIssue, fetch_issues
-from src.analysis.analyze_issue import AnalysisResult, analyze_issue
-from src.response.draft_response import draft_response
-from src.digest.build_digest import FlaggedItem, build_digest, build_digest_text
-from src.email.send_digest import send_digest
+from config import AppConfig, load_config
+from github.fetch_issues import GitHubError, GitHubIssue, fetch_issues
+from analysis.analyze_issue import AnalysisResult, analyze_issue
+from response.draft_response import draft_response
+from digest.build_digest import FlaggedItem, build_digest, build_digest_text
+from email.send_digest import send_digest
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
