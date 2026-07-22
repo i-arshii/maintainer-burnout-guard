@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 # Maximum parallel Bedrock workers for issue analysis
-_MAX_ANALYSIS_WORKERS = 10
+_MAX_ANALYSIS_WORKERS = 5
 
 
 # ---------------------------------------------------------------------------
