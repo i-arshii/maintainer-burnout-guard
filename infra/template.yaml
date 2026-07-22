@@ -50,7 +50,7 @@ Resources:
     Properties:
       FunctionName: maintainer-burnout-guard
       Description: Nightly GitHub issue triage — Bedrock analysis + SES digest
-      CodeUri: ../lambda/
+      CodeUri: ../src/
       Handler: handler.handler
       MemorySize: !Ref LambdaMemoryMB
       Timeout: !Ref LambdaTimeoutSeconds
