@@ -159,43 +159,93 @@ Go to [github.com/settings/tokens](https://github.com/settings/tokens) and gener
 
 #### Step 4 — Provision SSM parameters
 
-```bash
-# GitHub token — stored as SecureString (KMS-encrypted)
-aws ssm put-parameter \
-  --name "/burnout-guard/github-token" \
-  --value "ghp_your_token_here" \
-  --type SecureString
+Select the correct tab below based on your operating system and terminal environment. If you are on Windows using **Git Bash**, you must use the Git Bash setup to prevent path conversion errors.
 
-# Repositories to monitor (comma-separated)
-aws ssm put-parameter \
-  --name "/burnout-guard/repos" \
-  --value "owner/repo1,owner/repo2" \
-  --type String
+##### "macOS / Linux / WSL"
 
-# SES sender (must be verified)
-aws ssm put-parameter \
-  --name "/burnout-guard/ses-from" \
-  --value "guard@yourdomain.com" \
-  --type String
+  ```bash
+    # GitHub token — stored as SecureString (KMS-encrypted)
+    aws ssm put-parameter \
+      --name "/burnout-guard/github-token" \
+      --value "ghp_your_token_here" \
+      --type SecureString
 
-# Digest recipient
-aws ssm put-parameter \
-  --name "/burnout-guard/ses-to" \
-  --value "you@yourdomain.com" \
-  --type String
+    # Repositories to monitor (comma-separated)
+    aws ssm put-parameter \
+      --name "/burnout-guard/repos" \
+      --value "owner/repo1,owner/repo2" \
+      --type String
 
-# Lookback window in hours (how far back to scan on each run)
-aws ssm put-parameter \
-  --name "/burnout-guard/lookback-hours" \
-  --value "24" \
-  --type String
+    # SES sender (must be verified)
+    aws ssm put-parameter \
+      --name "/burnout-guard/ses-from" \
+      --value "guard@yourdomain.com" \
+      --type String
 
-# Bedrock model ID
-aws ssm put-parameter \
-  --name "/burnout-guard/bedrock-model-id" \
-  --value "amazon.nova-lite-v1:0" \
-  --type String
-```
+    # Digest recipient
+    aws ssm put-parameter \
+      --name "/burnout-guard/ses-to" \
+      --value "you@yourdomain.com" \
+      --type String
+
+    # Lookback window in hours (how far back to scan on each run)
+    aws ssm put-parameter \
+      --name "/burnout-guard/lookback-hours" \
+      --value "24" \
+      --type String
+
+    # Bedrock model ID
+    aws ssm put-parameter \
+      --name "/burnout-guard/bedrock-model-id" \
+      --value "amazon.nova-lite-v1:0" \
+      --type String
+  ```
+
+##### "Windows (Git Bash)"
+
+  > **Note:** Git Bash automatically alters paths starting with a forward slash. The `MSYS_NO_PATHCONV=1` prefix disables this behavior to prevent validation errors.
+
+  ```bash
+    # GitHub token — stored as SecureString (KMS-encrypted)
+    MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/burnout-guard/github-token" --value "ghp_your_token_here" --type SecureString
+
+    # Repositories to monitor (comma-separated)
+    MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/burnout-guard/repos" --value "owner/repo1,owner/repo2" --type String
+
+    # SES sender (must be verified)
+    MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/burnout-guard/ses-from" --value "guard@yourdomain.com" --type String
+
+    # Digest recipient
+    MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/burnout-guard/ses-to" --value "you@yourdomain.com" --type String
+
+    # Lookback window in hours (how far back to scan on each run)
+    MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/burnout-guard/lookback-hours" --value "24" --type String
+
+    # Bedrock model ID
+    MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/burnout-guard/bedrock-model-id" --value "amazon.nova-lite-v1:0" --type String
+  ```
+
+##### "Windows (PowerShell)"
+
+  ```powershell
+    # GitHub token — stored as SecureString (KMS-encrypted)
+    aws ssm put-parameter --name "/burnout-guard/github-token" --value "ghp_your_token_here" --type SecureString
+
+    # Repositories to monitor (comma-separated)
+    aws ssm put-parameter --name "/burnout-guard/repos" --value "owner/repo1,owner/repo2" --type String
+
+    # SES sender (must be verified)
+    aws ssm put-parameter --name "/burnout-guard/ses-from" --value "guard@yourdomain.com" --type String
+
+    # Digest recipient
+    aws ssm put-parameter --name "/burnout-guard/ses-to" --value "you@yourdomain.com" --type String
+
+    # Lookback window in hours (how far back to scan on each run)
+    aws ssm put-parameter --name "/burnout-guard/lookback-hours" --value "24" --type String
+
+    # Bedrock model ID
+    aws ssm put-parameter --name "/burnout-guard/bedrock-model-id" --value "amazon.nova-lite-v1:0" --type String
+  ```
 
 All parameter paths are documented in [`.env.example`](.env.example).
 
