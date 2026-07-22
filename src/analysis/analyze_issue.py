@@ -33,34 +33,46 @@ MAX_BODY_CHARS = 3000
 
 _SYSTEM_PROMPT = (
     "You are a code-of-conduct reviewer for open-source projects. "
-    "You respond ONLY with valid JSON — no explanation, no markdown fences, no extra text."
+    "Your output must be single-line raw JSON. Do not include markdown blocks, "
+    "do not include backticks (```), and do not wrap text in a 'json' indicator code fence. "
+    "Do not provide explanations before or after the JSON structure."
 )
 
 _USER_PROMPT = """\
-Analyze this GitHub issue and return ONLY valid JSON with exactly this shape:
+Analyze the provided GitHub issue and evaluate its text contents against our criteria.
+You must return your output strictly in this JSON format:
 {{
-  "flagged": <boolean>,
-  "severity": <1 | 2 | 3>,
-  "sentiment": <"hostile" | "neutral" | "positive">,
-  "tone": <"demanding" | "assertive" | "polite">,
-  "clarity": <"clear" | "vague" | "no-repro-steps">,
-  "reasons": [<string>, ...]
+  "flagged": true,
+  "severity": 1,
+  "sentiment": "neutral",
+  "tone": "polite",
+  "clarity": "clear",
+  "reasons": ["reason_1", "reason_2"]
 }}
 
-Severity guide:
-  1 = missing information only (no repro steps, no version, vague description)
-  2 = dismissive or entitled tone toward maintainers
-  3 = aggressive, threatening, or code-of-conduct violating language
+Where values match these definitions:
+- flagged: boolean (true or false)
+- severity: integer (1, 2, or 3)
+- sentiment: string ("hostile", "neutral", or "positive")
+- tone: string ("demanding", "assertive", or "polite")
+- clarity: string ("clear", "vague", or "no-repro-steps")
 
-Only set flagged=true if the issue genuinely needs maintainer intervention.
-Well-written but incomplete issues should be flagged at severity 1.
-Clear, polite, and complete issues should NOT be flagged.
+Severity rules guide:
+  1 = Missing documentation context only (no repro steps, no system version tracks, vague overview description).
+  2 = Dismissive, entitled, rude, or hostile conversational remarks targeting project maintainers.
+  3 = Explicitly aggressive, threatening, harassing, or severe code-of-conduct violating statements.
+
+Only assign flagged=true if the issue genuinely demands reviewer or maintainer intervention.
+Incomplete issues that remain polite must be flagged at severity 1.
+Constructive, polite, and descriptive issues must remain flagged=false.
 
 Issue Title: {title}
 Issue Body:
 ---
 {body}
----"""
+---
+
+CRITICAL: Return the raw JSON block immediately. Do not use code blocks or markdown formatting."""
 
 
 @dataclass
