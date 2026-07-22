@@ -34,7 +34,7 @@ class AppConfig:
     ses_to: str
     lookback_hours: int        # default 24
     bedrock_model_id: str
-    aws_region: str = field(default_factory=lambda: os.environ.get("AWS_REGION", "us-east-1"))
+    TARGET_REGION: str = field(default_factory=lambda: os.environ.get("TARGET_REGION", "us-east-1"))
 
 
 def load_config() -> AppConfig:
@@ -43,7 +43,7 @@ def load_config() -> AppConfig:
     WithDecryption=True handles the SecureString github-token.
     Raises RuntimeError with a clear message on any missing param.
     """
-    ssm = boto3.client("ssm", region_name=os.environ.get("AWS_REGION", "us-east-1"))
+    ssm = boto3.client("ssm", region_name=os.environ.get("TARGET_REGION", "us-east-1"))
 
     names = list(_PARAM_PATHS.values())
 

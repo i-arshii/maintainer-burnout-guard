@@ -86,7 +86,7 @@ def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
     )
 
     # Nova Lite uses the Converse API — messages array + optional system prompt
-    bedrock = boto3.client("bedrock-runtime", region_name=config.aws_region)
+    bedrock = boto3.client("bedrock-runtime", region_name=config.TARGET_REGION)
 
     try:
         response = bedrock.converse(

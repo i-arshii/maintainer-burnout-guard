@@ -37,7 +37,7 @@ def send_digest(
     date_str = run_date.strftime("%Y-%m-%d")
     subject = f"\U0001f6e1\ufe0f Burnout Guard \u2013 {flagged_count} issue{'s' if flagged_count != 1 else ''} flagged \u2013 {date_str}"
 
-    ses = boto3.client("ses", region_name=config.aws_region)
+    ses = boto3.client("ses", region_name=config.TARGET_REGION)
 
     try:
         response = ses.send_email(

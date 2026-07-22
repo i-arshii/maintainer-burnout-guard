@@ -36,7 +36,7 @@ Globals:
     Environment:
       Variables:
         # boto3 uses this for all service clients
-        AWS_REGION: !Ref AWS::Region
+        TARGET_REGION: !Ref AWS::Region
         POWERTOOLS_LOG_LEVEL: INFO
 
 # ---------------------------------------------------------------------------

@@ -113,7 +113,7 @@ def draft_response(
         reasons=reasons_text,
     )
 
-    bedrock = boto3.client("bedrock-runtime", region_name=config.aws_region)
+    bedrock = boto3.client("bedrock-runtime", region_name=config.TARGET_REGION)
 
     try:
         response = bedrock.converse(
