@@ -144,6 +144,16 @@ def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
     severity = data.get("severity", 1)
     if severity not in (1, 2, 3):
         severity = 1
+    
+    # Extract reasons from data first
+    reasons = data.get("reasons", [])
+
+    # If flagged but the model provided no reasons, apply fallback reasons
+    if bool(data.get("flagged", False)) and not reasons:
+        if severity == 1:
+            reasons = ["Issue tracks minimal description context or missing technical reproduction parameters."]
+        else:
+            reasons = ["Maintainer review flagged due to text conversational pacing attributes."]
 
     result = AnalysisResult(
         flagged=bool(data.get("flagged", False)),
@@ -151,7 +161,7 @@ def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
         sentiment=data.get("sentiment", "neutral"),
         tone=data.get("tone", "polite"),
         clarity=data.get("clarity", "clear"),
-        reasons=data.get("reasons", []),
+        reasons=reasons,
     )
 
     logger.info(
