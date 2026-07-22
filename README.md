@@ -264,11 +264,36 @@ After deploying, test the full pipeline immediately from the AWS console:
 Or via CLI:
 
 ```bash
-aws lambda invoke \
-  --function-name maintainer-burnout-guard \
-  --payload '{}' \
-  --cli-binary-format raw-in-base64-out \
-  response.json && cat response.json
+  # macOS / Linux / WSL
+
+    aws lambda invoke \
+      --function-name maintainer-burnout-guard \
+      --payload '{}' \
+      --cli-binary-format raw-in-base64-out \
+      response.json && cat response.json
+     
+
+  # Windows (Git Bash)
+      
+    aws lambda invoke \
+      --function-name maintainer-burnout-guard \
+      --payload '{}' \
+      --cli-binary-format raw-in-base64-out \
+      response.json && cat response.json
+      
+
+  # Windows (PowerShell)
+      
+    aws lambda invoke `
+      --function-name maintainer-burnout-guard `
+      --payload '{}' `
+      --cli-binary-format raw-in-base64-out `
+      response.json; Get-Content response.json
+    
+
+  Windows (Command Prompt - CMD)
+  
+    aws lambda invoke --function-name maintainer-burnout-guard --payload "{}" --cli-binary-format raw-in-base64-out response.json && type response.json
 ```
 
 ### Adjust the schedule
