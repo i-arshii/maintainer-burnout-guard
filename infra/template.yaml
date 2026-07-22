@@ -1,0 +1,153 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  Maintainer Burnout Guard — nightly GitHub issue triage agent.
+  EventBridge triggers a Lambda that uses Bedrock (Amazon Nova Lite)
+  to flag toxic/low-effort issues and emails a digest via SES.
+
+# ---------------------------------------------------------------------------
+# Parameters — override at deploy time without touching source
+# ---------------------------------------------------------------------------
+Parameters:
+  CronSchedule:
+    Type: String
+    Default: "cron(0 7 * * ? *)"
+    Description: EventBridge schedule expression (UTC). Default is 07:00 UTC daily.
+
+  LambdaMemoryMB:
+    Type: Number
+    Default: 256
+    Description: Lambda memory in MB.
+
+  LambdaTimeoutSeconds:
+    Type: Number
+    Default: 300
+    Description: Lambda timeout in seconds (max 900).
+
+# ---------------------------------------------------------------------------
+# Globals
+# ---------------------------------------------------------------------------
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        # boto3 uses this for all service clients
+        AWS_REGION: !Ref AWS::Region
+        POWERTOOLS_LOG_LEVEL: INFO
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+Resources:
+
+  # ── Lambda function ──────────────────────────────────────────────────────
+  BurnoutGuardFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: maintainer-burnout-guard
+      Description: Nightly GitHub issue triage — Bedrock analysis + SES digest
+      CodeUri: ../lambda/
+      Handler: handler.handler
+      MemorySize: !Ref LambdaMemoryMB
+      Timeout: !Ref LambdaTimeoutSeconds
+      ReservedConcurrentExecutions: 1    # prevents overlapping nightly runs
+      Role: !GetAtt LambdaExecutionRole.Arn
+      # EventBridge trigger defined separately so we can control the permission
+      # resource name explicitly
+
+  # ── EventBridge rule ─────────────────────────────────────────────────────
+  NightlyScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: burnout-guard-nightly
+      Description: Triggers the Burnout Guard Lambda on a nightly schedule
+      ScheduleExpression: !Ref CronSchedule
+      State: ENABLED
+      Targets:
+        - Id: BurnoutGuardLambdaTarget
+          Arn: !GetAtt BurnoutGuardFunction.Arn
+
+  # ── Permission for EventBridge to invoke Lambda ──────────────────────────
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt BurnoutGuardFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt NightlyScheduleRule.Arn
+
+  # ── IAM execution role (least-privilege) ─────────────────────────────────
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: maintainer-burnout-guard-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: BurnoutGuardPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+
+              # CloudWatch Logs
+              - Sid: AllowCloudWatchLogs
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+
+              # SSM — scoped to /burnout-guard/* only
+              - Sid: AllowSSMRead
+                Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/burnout-guard/*"
+
+              # Bedrock — Amazon Nova Lite only
+              - Sid: AllowBedrockNovaLite
+                Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:Converse
+                Resource:
+                  - !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/amazon.nova-lite-v1:0"
+
+              # SES — send from any verified identity in this account
+              - Sid: AllowSESSend
+                Effect: Allow
+                Action:
+                  - ses:SendEmail
+                Resource:
+                  - !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+Outputs:
+  FunctionName:
+    Description: Lambda function name
+    Value: !Ref BurnoutGuardFunction
+
+  FunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt BurnoutGuardFunction.Arn
+
+  ScheduleRuleArn:
+    Description: EventBridge schedule rule ARN
+    Value: !GetAtt NightlyScheduleRule.Arn
+
+  ExecutionRoleArn:
+    Description: IAM execution role ARN
+    Value: !GetAtt LambdaExecutionRole.Arn
