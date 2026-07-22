@@ -31,7 +31,7 @@ from github.fetch_issues import GitHubError, GitHubIssue, fetch_issues
 from analysis.analyze_issue import AnalysisResult, analyze_issue
 from response.draft_response import draft_response
 from digest.build_digest import FlaggedItem, build_digest, build_digest_text
-from email.send_digest import send_digest
+from mailer.send_digest import send_digest
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
