@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# AWS SAM
+.aws-sam/
+
+# Secrets
+.env
+*.env
+
+# Kiro spec (local planning only)
+.kiro/
+
+# OS
+.DS_Store
+Thumbs.db
