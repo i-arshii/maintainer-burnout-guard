@@ -23,9 +23,9 @@ You review the drafts, copy the ones you like, and post them. The agent never to
 ## Key Features
 
 - **Autonomous nightly triage** — EventBridge fires the agent on a cron schedule; zero manual steps
-- **AI-powered issue scoring** — Bedrock evaluates sentiment, entitlement tone, and clarity for every issue in parallel
-- **Severity-aware response drafting** — three distinct prompt strategies: missing info (SEV-1), dismissive tone (SEV-2), CoC violations (SEV-3)
-- **Human-sounding drafts** — responses never mention AI; written to sound like the maintainer authored them
+- **AI-powered issue scoring** — Bedrock evaluates every issue in parallel and returns a flagged verdict, severity level, specific reasons, and a context-aware suggested reply
+- **Context-aware reply drafting** — suggested reply is generated in the same Bedrock call as analysis, shaped specifically to the issue content — never generic boilerplate
+- **Human-sounding drafts** — replies never mention AI; written to sound like the maintainer authored them
 - **Polished HTML digest** — colour-coded severity badges, direct GitHub links, and copy-ready reply blocks
 - **Zero dependencies** — uses Python stdlib + boto3 (pre-installed in Lambda); no packaging step needed
 - **Least-privilege IAM** — SSM, Bedrock, and SES permissions are individually scoped; no wildcard actions
@@ -55,19 +55,17 @@ Lambda: handler.handler
     │
     ├─ 1. load_config()       SSM batch GetParameters
     ├─ 2. fetch_issues()      GitHub REST API, paginated, per repo
-    ├─ 3. analyze_all()       Bedrock Converse — parallel (ThreadPoolExecutor x10)
-    │       └─ sentiment / tone / clarity → flagged + severity 1–3
-    ├─ 4. draft_response()    Bedrock Converse — sequential, flagged only
-    │       └─ severity-specific prompt → empathetic plain-text reply
-    ├─ 5. build_digest()      HTML + plain-text email body
-    └─ 6. send_digest()       SES SendEmail → maintainer inbox
+    ├─ 3. analyze_all()       Bedrock Converse — parallel (ThreadPoolExecutor x5)
+    │       └─ flagged + severity 1–3 + reasons + suggested reply
+    ├─ 4. build_digest()      HTML + plain-text email body
+    └─ 5. send_digest()       SES SendEmail → maintainer inbox
 ```
 
 ### Project Structure
 
 ```
 maintainer-burnout-guard/
-├── lambda/
+├── src/
 │   ├── __init__.py
 │   ├── handler.py              # Entry point + orchestration
 │   ├── config.py               # SSM loader, AppConfig dataclass
@@ -76,19 +74,18 @@ maintainer-burnout-guard/
 │   │   └── fetch_issues.py     # GitHub REST client (stdlib urllib)
 │   ├── analysis/
 │   │   ├── __init__.py
-│   │   └── analyze_issue.py    # Bedrock analysis — structured JSON output
-│   ├── response/
-│   │   ├── __init__.py
-│   │   └── draft_response.py   # Bedrock response drafting
+│   │   └── analyze_issue.py    # Bedrock analysis — flagged, severity, reasons, suggested reply
 │   ├── digest/
 │   │   ├── __init__.py
 │   │   └── build_digest.py     # HTML + plain-text digest builder
-│   └── email/
+│   └── mailer/
 │       ├── __init__.py
 │       └── send_digest.py      # SES delivery
 ├── infra/
 │   └── template.yaml           # AWS SAM — all infra as code
 ├── .env.example                # SSM parameter reference (not used at runtime)
+├── CONTRIBUTING.md
+├── LICENSE
 └── README.md
 ```
 
