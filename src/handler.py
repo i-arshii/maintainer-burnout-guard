@@ -8,9 +8,8 @@ Pipeline:
   1. load_config()       — batch SSM fetch
   2. fetch_issues()      — per repo, paginated GitHub REST API
   3. analyze_all()       — parallel Bedrock Nova Lite analysis
-  4. draft_response()    — sequential, flagged issues only
-  5. build_digest()      — HTML + plain-text assembly
-  6. send_digest()       — SES delivery
+  4. build_digest()      — HTML + plain-text assembly
+  5. send_digest()       — SES delivery
 
 On any unhandled exception: logs a structured JSON error record
 then re-raises so Lambda marks the invocation failed (enabling
@@ -29,7 +28,6 @@ from typing import List, Tuple
 from config import AppConfig, load_config
 from github.fetch_issues import GitHubError, GitHubIssue, fetch_issues
 from analysis.analyze_issue import AnalysisResult, analyze_issue
-from response.draft_response import draft_response
 from digest.build_digest import FlaggedItem, build_digest, build_digest_text
 from mailer.send_digest import send_digest
 
