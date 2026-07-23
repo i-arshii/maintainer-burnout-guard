@@ -2,11 +2,11 @@
 analysis/analyze_issue.py
 --------------------------
 Sends each GitHub issue to AWS Bedrock (Amazon Nova Lite) for analysis.
-Returns a structured AnalysisResult scoring sentiment, tone, and clarity.
+Returns a structured AnalysisResult with flagged status, severity, reasons,
+and a context-aware suggested reply.
 
 Design notes:
-- Nova Lite uses the Amazon Bedrock Converse API (converse / invoke_model
-  with the amazon.nova-lite-v1:0 model ID and a messages-style payload).
+- Nova Lite uses the Amazon Bedrock Converse API.
 - Prompt instructs the model to return ONLY valid JSON so we parse directly.
 - JSON parse failures degrade gracefully: returns flagged=False with a
   warning log rather than crashing the whole Lambda run.
@@ -44,9 +44,6 @@ You must return your output strictly in this JSON format:
 {{
   "flagged": true,
   "severity": 1,
-  "sentiment": "neutral",
-  "tone": "polite",
-  "clarity": "clear",
   "reasons": ["Personalized reason citing the issue components directly"],
   "suggested_reply": "Deeply personal, context-specific response for this unique issue."
 }}
@@ -54,9 +51,6 @@ You must return your output strictly in this JSON format:
 Where values match these definitions:
 - flagged: boolean (true or false)
 - severity: integer (1, 2, or 3)
-- sentiment: string ("hostile", "neutral", or "positive")
-- tone: string ("demanding", "assertive", or "polite")
-- clarity: string ("clear", "vague", or "no-repro-steps")
 
 CRITICAL INSTRUCTIONS FOR "reasons":
 Never use template phrases like "missing system version tracks" or "missing repro steps". Describe exactly what is missing based strictly on the domain of the title. For example, if the issue is about a data feed parse artifact (like pricing percentages), state that specific sample pricing logs or data payloads are missing.
@@ -80,11 +74,8 @@ CRITICAL: Return the raw JSON block immediately. Do not use code blocks or markd
 class AnalysisResult:
     flagged: bool
     severity: Literal[1, 2, 3] = 1
-    sentiment: Literal["hostile", "neutral", "positive"] = "neutral"
-    tone: Literal["demanding", "assertive", "polite"] = "polite"
-    clarity: Literal["clear", "vague", "no-repro-steps"] = "clear"
     reasons: List[str] = field(default_factory=list)
-    suggested_reply: str = ""  # New field to hold the custom response string
+    suggested_reply: str = ""
 
 
 
@@ -168,15 +159,12 @@ def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
     result = AnalysisResult(
         flagged=bool(data.get("flagged", False)),
         severity=severity,
-        sentiment=data.get("sentiment", "neutral"),
-        tone=data.get("tone", "polite"),
-        clarity=data.get("clarity", "clear"),
         reasons=reasons,
         suggested_reply=suggested_reply,
     )
 
     logger.info(
-        "[analysis] Issue #%d (%s): flagged=%s severity=%d sentiment=%s",
-        issue.number, issue.repo, result.flagged, result.severity, result.sentiment,
+        "[analysis] Issue #%d (%s): flagged=%s severity=%d",
+        issue.number, issue.repo, result.flagged, result.severity,
     )
     return result
