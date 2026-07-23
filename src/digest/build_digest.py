@@ -35,6 +35,7 @@ class FlaggedItem:
     issue: GitHubIssue
     analysis: AnalysisResult
     draft: str
+    suggested_reply: str = ""  # inline reply drafted by the analyzer
 
 
 # ---------------------------------------------------------------------------
@@ -133,7 +134,20 @@ def _html_issue_card(item: FlaggedItem) -> str:
         for r in analysis.reasons
     ) or "<li style='color: #475569;'>No specific reasons captured.</li>"
 
-    draft_escaped = html.escape(item.draft)
+    draft_escaped = ""  # draft field unused — reply comes from suggested_reply
+    suggested_reply_escaped = html.escape(item.suggested_reply) if item.suggested_reply else ""
+
+    suggested_reply_block = f"""
+      <div style="margin-top: 12px;">
+        <p style="font-size: 12px; font-weight: 600; text-transform: uppercase;
+                  letter-spacing: 0.05em; color: #64748b; margin: 0 0 6px;">
+          AI pre-analysis reply &mdash; context-aware draft from analyzer
+        </p>
+        <pre style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px;
+                    padding: 16px; font-size: 13px; line-height: 1.6;
+                    white-space: pre-wrap; word-break: break-word;
+                    color: #166534; margin: 0;">{suggested_reply_escaped}</pre>
+      </div>""" if suggested_reply_escaped else ""
 
     return f"""
     <!-- Issue card: #{issue.number} -->
@@ -157,7 +171,7 @@ def _html_issue_card(item: FlaggedItem) -> str:
         </div>
       </div>
 
-      <div style="margin-bottom: 16px;">
+      <div>
         <p style="font-size: 12px; font-weight: 600; text-transform: uppercase;
                   letter-spacing: 0.05em; color: #64748b; margin: 0 0 6px;">
           Flagged for
@@ -166,17 +180,7 @@ def _html_issue_card(item: FlaggedItem) -> str:
           {reasons_html}
         </ul>
       </div>
-
-      <div>
-        <p style="font-size: 12px; font-weight: 600; text-transform: uppercase;
-                  letter-spacing: 0.05em; color: #64748b; margin: 0 0 6px;">
-          Suggested reply &mdash; copy and review before posting
-        </p>
-        <pre style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
-                    padding: 16px; font-size: 13px; line-height: 1.6;
-                    white-space: pre-wrap; word-break: break-word;
-                    color: #334155; margin: 0;">{draft_escaped}</pre>
-      </div>
+      {suggested_reply_block}
     </div>"""
 
 
@@ -233,9 +237,11 @@ def build_digest_text(
                 "Flagged for:",
                 *[f"  • {r}" for r in analysis.reasons],
                 "",
-                "Suggested reply:",
-                item.draft,
-                "",
+                *([
+                    "AI pre-analysis reply:",
+                    item.suggested_reply,
+                    "",
+                ] if item.suggested_reply else []),
             ]
 
     lines += [

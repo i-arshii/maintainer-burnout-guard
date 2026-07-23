@@ -47,7 +47,8 @@ You must return your output strictly in this JSON format:
   "sentiment": "neutral",
   "tone": "polite",
   "clarity": "clear",
-  "reasons": ["reason_1", "reason_2"]
+  "reasons": ["Personalized reason citing the issue components directly"],
+  "suggested_reply": "Deeply personal, context-specific response for this unique issue."
 }}
 
 Where values match these definitions:
@@ -57,14 +58,14 @@ Where values match these definitions:
 - tone: string ("demanding", "assertive", or "polite")
 - clarity: string ("clear", "vague", or "no-repro-steps")
 
-Severity rules guide:
-  1 = Missing documentation context only (no repro steps, no system version tracks, vague overview description).
-  2 = Dismissive, entitled, rude, or hostile conversational remarks targeting project maintainers.
-  3 = Explicitly aggressive, threatening, harassing, or severe code-of-conduct violating statements.
+CRITICAL INSTRUCTIONS FOR "reasons":
+Never use template phrases like "missing system version tracks" or "missing repro steps". Describe exactly what is missing based strictly on the domain of the title. For example, if the issue is about a data feed parse artifact (like pricing percentages), state that specific sample pricing logs or data payloads are missing.
 
-Only assign flagged=true if the issue genuinely demands reviewer or maintainer intervention.
-Incomplete issues that remain polite must be flagged at severity 1.
-Constructive, polite, and descriptive issues must remain flagged=false.
+CRITICAL INSTRUCTIONS FOR "suggested_reply":
+- Do NOT generate a list, bullet points, or numbered steps.
+- Do NOT ask generic boilerplate questions like "What OS are you using?" or "What are the steps to reproduce?".
+- Write a warm, professional, human paragraph (2-3 sentences max) mentioning specific items from the title.
+- For example, if the issue mentions 'movers feed parse artifacts (+874% sugar)', write a reply like: "Thanks for tracking down these extreme parse shifts in the consumer-prices feed! To help us isolate the math error in the basket metrics, could you paste a raw snippet of the upstream feed payload or the retailer basket object you were parsing?"
 
 Issue Title: {title}
 Issue Body:
@@ -83,6 +84,8 @@ class AnalysisResult:
     tone: Literal["demanding", "assertive", "polite"] = "polite"
     clarity: Literal["clear", "vague", "no-repro-steps"] = "clear"
     reasons: List[str] = field(default_factory=list)
+    suggested_reply: str = ""  # New field to hold the custom response string
+
 
 
 def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
@@ -155,6 +158,13 @@ def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
         else:
             reasons = ["Maintainer review flagged due to text conversational pacing attributes."]
 
+    suggested_reply = data.get("suggested_reply", "").strip()
+    if not suggested_reply:
+        if severity == 1:
+            suggested_reply = "Thanks for flagging this! Could you share a quick diagnostic log snippet or example data payload matching this behavior so we can investigate the root cause?"
+        else:
+            suggested_reply = "Thank you for the report. Our team will review this behavior against our project workflow updates shortly."
+
     result = AnalysisResult(
         flagged=bool(data.get("flagged", False)),
         severity=severity,
@@ -162,6 +172,7 @@ def analyze_issue(issue: GitHubIssue, config: AppConfig) -> AnalysisResult:
         tone=data.get("tone", "polite"),
         clarity=data.get("clarity", "clear"),
         reasons=reasons,
+        suggested_reply=suggested_reply,
     )
 
     logger.info(

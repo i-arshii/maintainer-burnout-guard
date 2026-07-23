@@ -111,18 +111,10 @@ def _draft_all(
     flagged: List[Tuple[GitHubIssue, AnalysisResult]],
     config: AppConfig,
 ) -> List[FlaggedItem]:
-    """Draft responses for all flagged issues sequentially."""
+    """Build FlaggedItem list. Reply comes from analysis.suggested_reply — no separate draft call needed."""
     items: List[FlaggedItem] = []
     for issue, analysis in flagged:
-        try:
-            draft = draft_response(issue, analysis, config)
-        except Exception as exc:   # noqa: BLE001
-            logger.warning(
-                "[handler] Failed to draft response for issue #%d in %s: %s",
-                issue.number, issue.repo, exc,
-            )
-            draft = "(Draft unavailable — please write a manual response)"
-        items.append(FlaggedItem(issue=issue, analysis=analysis, draft=draft))
+        items.append(FlaggedItem(issue=issue, analysis=analysis, draft="", suggested_reply=analysis.suggested_reply))
     return items
 
 
