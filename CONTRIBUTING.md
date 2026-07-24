@@ -38,7 +38,7 @@ There are several ways to contribute beyond writing code:
 ### 1. Clone and create a virtual environment
 
 ```bash
-git clone https://github.com/your-org/maintainer-burnout-guard.git
+git clone https://github.com/-i-arshii/maintainer-burnout-guard.git
 cd maintainer-burnout-guard
 
 python3.12 -m venv .venv
